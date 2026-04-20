@@ -1,9 +1,9 @@
-				; za uporabo najprej kli�ite proceduro setupUART
+				; za uporabo najprej kličite proceduro setupUART
 				.equ baudrate = 9600
 
 				.macro print
 				.cseg
-				push r16			; pazimo, da ne bi slu�ajno spremenili r16, ZH, ZL
+				push r16			; pazimo, da ne bi slučajno spremenili r16, ZH, ZL
 				push ZH
 				push ZL
 
@@ -15,64 +15,64 @@
 				pop ZH
 				pop r16				; vrnemo v r16 prvotno vrednost
 				.endmacro
-			
+
 
 ;****************************************************************************************************
 ;  printstring
-;  Z ka�e na za�etek niza v PROGRAMskem pomnilniku (CSEG)
+;  Z kaže na začetek niza v PROGRAMskem pomnilniku (CSEG)
 ;****************************************************************************************************
 
 				.cseg
-printstring:	lpm r16, Z+			; nalo�i znak in premakni kazalec Z naprej
-				cpi r16, 0			; ali je konec niza (niz se kon�a z NULL)
-				breq stopprinting	; da, sko�i na konec
-				call send_char		; ne, po�lji znak
-				rjmp printstring	; na vrsti je naslednji znak, sko�i tja
-stopprinting:	ret				                
+printstring:	lpm r16, Z+			; naloži znak in premakni kazalec Z naprej
+				cpi r16, 0			; ali je konec niza (niz se konča z NULL)
+				breq stopprinting	; da, skoči na konec
+				call send_char		; ne, pošlji znak
+				rjmp printstring	; na vrsti je naslednji znak, skoči tja
+stopprinting:	ret
 
 ;****************************************************************************************************
 ;  poslji_hex
-;  r16 - stevilka, ki jo zelimo izpisati na UART 
+;  r16 - stevilka, ki jo zelimo izpisati na UART
 ;****************************************************************************************************
-				; v r16 damo vrednost, na UART dobimo dve ASCII �estnajsti�ki �tevki  (0xFF --> 'FF')
+				; v r16 damo vrednost, na UART dobimo dve ASCII šestnajstiški števki  (0xFF --> 'FF')
 send_hex:		push r16			; kako pretvorimo vrednosti od 0 do 9 v '0' do '9'?
 									; kaj pa od 10 do 15 v 'A' do 'F'?
 				swap r16			; zamenjamo visoki in nizki del byta
-				andi r16, 0x0F		; zanimajo nas samo �tirje biti
+				andi r16, 0x0F		; zanimajo nas samo štirje biti
 
 				cpi r16, 0x0A		; primerjaj z deset
 				brcs manjsa_od_10_1
-				subi r16, -7		; �e ni manj�a od deset, je osnova 'A', r16 je vsaj 10, pri�tejemo �e '0', je potem 58, manjka �e 7
-manjsa_od_10_1:						; sicer je osnova '0', pri�tejemo 48 ('0')
+				subi r16, -7		; če ni manjša od deset, je osnova 'A', r16 je vsaj 10, prištejemo še '0', je potem 58, manjka še 7
+manjsa_od_10_1:						; sicer je osnova '0', prištejemo 48 ('0')
 				subi r16, -48
 				call send_char
 
 				pop r16
-				andi r16, 0x0F		; zanimajo nas samo �tirje biti, tokrat so to spodnji �tirje
+				andi r16, 0x0F		; zanimajo nas samo štirje biti, tokrat so to spodnji štirje
 
 				cpi r16, 0x0A		; primerjaj z deset
 				brcs manjsa_od_10_2
-				subi r16, -7		; �e ni manj�a od deset, je osnova 'A', r16 je vsaj 10, pri�tejemo �e '0', je potem 58, manjka �e 7
-manjsa_od_10_2:						; sicer je osnova '0', pri�tejemo 48 ('0')
+				subi r16, -7		; če ni manjša od deset, je osnova 'A', r16 je vsaj 10, prištejemo še '0', je potem 58, manjka še 7
+manjsa_od_10_2:						; sicer je osnova '0', prištejemo 48 ('0')
 				subi r16, -48
 				call send_char
 
 				ret
-				
+
 ;****************************************************************************************************
 ;  setupUART
-;  pripravi serijska vrata na prenos podatkov, 9600 baud
+;  pripravi serijska vrata na prenos podatkov, 9600 baud pri 16 MHz
 ;
 ;****************************************************************************************************
 setupUART:		; pripravi serijska vrata
-				; ne sekirajte se, �e �e ne veste, �esa vsega ne poznate
+				; ne sekirajte se, če še ne veste, česa vsega ne poznate
 
-				; 
-				; vrednosti not npr. TXEN0 in UBRR0H dobimo v datoteki m328pdef.inc 
-				; in so lahko druga?ne glede na model mikrokontrolerja
+				;
+				; vrednosti not npr. TXEN0 in UBRR0H dobimo v datoteki m328pdef.inc
+				; in so lahko drugačne glede na model mikrokontrolerja
 
-				; 9600 baudov @ 16Mhz
-				; v IO register UBBR0 nalo�imo baudrate / 8
+				; 9600 baudov @ 16 MHz
+				; vrednosti UBRR0L/UBRR0H določijo hitrost serijske komunikacije
 
 				ldi r16, 0x67
 				ldi r17, 0x00
@@ -81,7 +81,7 @@ setupUART:		; pripravi serijska vrata
 
 				; RXEN0 = 4, TXEN0 = 3, znak << pomeni pomik v levo, >> desno
 				; 1<<TXEN0 = 0x40 (0b00000001 --> 0b00001000)
-				ldi r16, (1<<RXEN0)|(1<<TXEN0) ; vklju�imo bita za sprejem in za oddajo - pina dobita RX in TX funkcijo
+				ldi r16, (1<<RXEN0)|(1<<TXEN0) ; vključimo bita za sprejem in za oddajo - pina dobita RX in TX funkcijo
 				sts UCSR0B,r16
 
 				ldi r16, (3<<UCSZ00) ; 8 bitov, 1 stop bit
@@ -92,19 +92,19 @@ setupUART:		; pripravi serijska vrata
 				ret
 
 ;****************************************************************************************************
-; procedura po�lje znak v r16 po UART
+; procedura pošlje znak v r16 po UART
 ;
 ;****************************************************************************************************
-				; po�akajmo, da bo oddajni vmesni pomnilnik na voljo
+				; počakajmo, da bo oddajni vmesni pomnilnik na voljo
 send_char:		; takrat bo bit UDRE0 enak 1
-				push r16				; spravi r16 na sklad, ker bomo po njem pacali 
+				push r16				; spravi r16 na sklad, ker bomo po njem pacali
 poskusi_poslati:
 				lds r16, UCSR0A
-				sbrs r16,UDRE0			; presko�i naslednjo instrukcijo, �e je ta bit 1
-				rjmp poskusi_poslati	; bit �e ni 1, sko�i nazaj na preverjanje
-									
-				pop r16					; daj podatek (r16) v vmesni pomnilnik za UART, 
-				sts UDR0,r16	
+				sbrs r16,UDRE0			; preskoči naslednjo instrukcijo, če je ta bit 1
+				rjmp poskusi_poslati	; bit še ni 1, skoči nazaj na preverjanje
+
+				pop r16					; daj podatek (r16) v vmesni pomnilnik za UART,
+				sts UDR0,r16
 				ret
 
 ;****************************************************************************************************
@@ -112,7 +112,7 @@ poskusi_poslati:
 ;
 ;****************************************************************************************************
 
-get_char:		; po�akajmo, da bo znak prispel, bit RXC0 bo takrat 1
+get_char:		; počakajmo, da bo znak prispel, bit RXC0 bo takrat 1
 				lds r16, UCSR0A
 				sbrs r16, RXC0
 				rjmp get_char
@@ -142,12 +142,12 @@ dobro:			ldi r17, 51		; more magic
 				pop r17
 				sub r17, r0		; ostanek
 				pop r1
-				pop r0				
+				pop r0
 				ret				; confused?
 
 ;****************************************************************************************************
-;  izpi�i 8-bitno �tevilo kot ascii
-;  r16 �tevilo
+;  izpiši 8-bitno število kot ascii
+;  r16 število
 ;  r17 mest
 ;
 ;****************************************************************************************************
@@ -162,8 +162,8 @@ naslednja_cifra:					; najprej izracunamo stevke in jih damo na stack
 				ori r17, 0x30		; naredimo iz njega ASCII cifro (npr. 2 => 0x32 = '2')
 				push r17			; ker je ostanke potrebno izpisati v obratnem vrstnem redu
 				dec r18				; jih damo na sklad, vendar samo toliko cifer max, kot je bilo podano
-				brne naslednja_cifra	; �e imamo dovolj �tevk, nehamo
-							
+				brne naslednja_cifra	; če imamo dovolj števk, nehamo
+
 izpisi_cifre:   pop r16
 				or r16, r16			; zadnja cifra je ascii NULL (=0x00)
 				breq konec_izpisa
@@ -201,7 +201,7 @@ dump_registers:						; grda procedura... ampak deluje.. :p
 				push r7
 				push r6
 				push r5
-				push r4				
+				push r4
 				push r3
 				push r2
 				push r1
@@ -210,7 +210,7 @@ dump_registers:						; grda procedura... ampak deluje.. :p
 				in ZH, SPH
 				in ZL, SPL
 				ldi r18, 32		; 32 registrov na skladu
-				clr r19			; �tevec registrov
+				clr r19			; števec registrov
 				ld r16, Z+		; vrednost na vrhu skladu nima pomena
 naslednji_register:
 				ldi r16, 'r'
